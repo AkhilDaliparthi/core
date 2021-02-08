@@ -1,38 +1,39 @@
 package com.core.controllers;
 
-import com.core.dao.UserDetailsDAO;
-import com.core.model.User;
+import com.core.request.UserAccount;
+import com.core.response.ServiceResponse;
+import com.core.service.UserService;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
+@CrossOrigin(origins = "*")
 @RestController
 public class UserController {
-	
+
 	@Autowired
-	public UserDetailsDAO userDetailsDAO;
+	private UserService userService;
 
 	@GetMapping("/")
 	public String index() {
 		return "index";
 	}
-	
-	@GetMapping("/hello")
-	public String hello() {
-		String hello= "Hello Spring Boot";
-		return hello;
+
+	@PostMapping
+	public ServiceResponse createAccount(@NonNull @RequestBody UserAccount userAccount) {
+		return new ServiceResponse(userService.createAccount(userAccount), HttpStatus.OK);
 	}
 	
-	@GetMapping("/getUsersInfo")
-    public List<User> getUserDetails(
-    		@RequestParam(value = "user_name") String userName, @RequestParam (value = "first_name") String firstName) {
-		List<User> users = new ArrayList<>();
-        User user = User.builder().username(userName).firstName(firstName).build();
-        users.add(user);
-        return users;
+	@GetMapping("/login")
+    public ServiceResponse getUserDetails(
+    		@RequestParam(value = "username") String userName, @RequestParam (value = "password") String password) {
+		return new ServiceResponse(userService.validateLogin(userName, password), HttpStatus.OK);
     }
+
+    @GetMapping("validateToken")
+	public ServiceResponse validateToken(
+			@RequestParam ("validateToken") String accessToken) {
+		return new ServiceResponse(userService.getUserDetailsByAccessToken(accessToken), HttpStatus.OK);
+	}
 }
